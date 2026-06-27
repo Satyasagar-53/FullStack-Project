@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "movies")
 public class Movie {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -12,11 +13,10 @@ public class Movie {
     private String title;
     private String genre;
     private double price;
-
-    @Column(name = "available_tickets")
     private int availableTickets;
 
-    // Getters and Setters
+    public Movie() {}
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 

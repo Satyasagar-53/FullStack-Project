@@ -1,219 +1,113 @@
-// src/pages/SeatSelection.jsx
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
 
-export default function SeatSelection() {
-  const { showId } = useParams();
-  const navigate = useNavigate();
-  
-  const rows = ['A', 'B', 'C', 'D', 'E', 'F'];
-  const seatNumbers = [1, 2, 3, 4, 5, 6, 7, 8];
-  const ticketPrice = 15.00;
-  const occupiedSeats = ['A3', 'A4', 'C5', 'C6', 'E1', 'E2'];
-
+const SeatSelection = ({ movie, onBackClick, onConfirmBooking, bookedSeats = ["S3", "S4", "S11", "S12"] }) => {
+  const totalSeats = Array.from({ length: 24 }, (_, i) => "S" + (i + 1));
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [hoveredSeat, setHoveredSeat] = useState(null);
 
-  const handleSeatClick = (seatId) => {
-    if (occupiedSeats.includes(seatId)) return;
-    setSelectedSeats((prev) =>
-      prev.includes(seatId) ? prev.filter((seat) => seat !== seatId) : [...prev, seatId]
-    );
+  const handleSeatClick = (seat) => {
+    if (bookedSeats.includes(seat)) return;
+    if (selectedSeats.includes(seat)) {
+      setSelectedSeats(selectedSeats.filter(s => s !== seat));
+    } else {
+      setSelectedSeats([...selectedSeats, seat]);
+    }
   };
 
-  const totalCost = selectedSeats.length * ticketPrice;
+  const totalAmount = selectedSeats.length * (movie?.price || 0);
 
-  const handleProceedToPayment = () => {
+  const handleCheckout = () => {
     if (selectedSeats.length === 0) return;
-    navigate('/summary', {
-      state: { showId, seats: selectedSeats, totalCost, paymentStatus: 'SUCCESSFUL' }
+    onConfirmBooking({
+      movie,
+      selectedSeats,
+      totalAmount
     });
   };
 
   return (
-    <div style={{ padding: '3rem 4rem', backgroundColor: '#060a12', minHeight: '92vh', color: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
-          .stark-font { font-family: 'Orbitron', sans-serif !important; }
-          
-          /* Animated cinematic project screen arch */
-          .cinema-screen {
-            width: 100%;
-            height: 12px;
-            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
-            border-radius: 50%;
-            filter: drop-shadow(0px 4px 12px rgba(0, 212, 255, 0.8));
-            margin-bottom: 0.5rem;
-          }
+    <div style={{ color: "white", padding: "15px 20px", fontFamily: "'Plus Jakarta Sans', sans-serif", maxWidth: "700px", margin: "0 auto" }}>
 
-          /* Interactive glowing seat elements */
-          .interactive-seat {
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          }
-          .interactive-seat:hover:not(:disabled) {
-            transform: translateY(-3px) scale(1.1);
-            box-shadow: 0 0 15px #00d4ff;
-            border-color: #00d4ff !important;
-            color: #060a12 !important;
-          }
-          
-          /* Glowing sidebar status panels */
-          .glow-panel {
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.05);
-            backdrop-filter: blur(12px);
-          }
-        `}
-      </style>
-      
-      {/* Dynamic Header */}
-      <div style={{ width: '100%', maxWidth: '1200px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-        <button onClick={() => navigate(-1)} className="stark-font" style={{ background: 'transparent', border: '1px solid rgba(0, 212, 255, 0.3)', color: '#00d4ff', padding: '0.6rem 1.4rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '700', letterSpacing: '1px', transition: 'all 0.2s' }} onMouseEnter={(e) => e.target.style.background = 'rgba(0, 212, 255, 0.1)'} onMouseLeave={(e) => e.target.style.background = 'transparent'}>
-          ← BACK TO DOSSIER
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+        <button
+          onClick={onBackClick}
+          style={{ backgroundColor: "rgba(255, 255, 255, 0.03)", color: "#9ca3af", padding: "8px 16px", border: "1px solid rgba(255, 255, 255, 0.08)", borderRadius: "10px", cursor: "pointer", fontWeight: "600", fontSize: "0.85rem" }}
+        >
+          ← Back
         </button>
-        <span className="stark-font" style={{ color: '#00d4ff', fontSize: '0.8rem', letterSpacing: '2px', border: '1px solid rgba(0, 212, 255, 0.15)', padding: '0.4rem 1rem', borderRadius: '20px', background: 'rgba(0, 79, 119, 0.15)' }}>
-          SYSTEM_NODE // CORE_{showId}
-        </span>
+        <div style={{ textAlign: "right" }}>
+          <h2 style={{ margin: 0, fontWeight: "800", fontSize: "1.5rem" }}>{movie?.title}</h2>
+          <div style={{ color: "#06b6d4", fontWeight: "700", fontSize: "0.85rem" }}>${movie?.price} / seat</div>
+        </div>
       </div>
 
-      {/* Main Container Core Section */}
-      <div style={{ display: 'flex', width: '100%', maxWidth: '1200px', gap: '3rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
-        
-        {/* Left Side: Seat Matrix Grid Card Layout */}
-        <div style={{ flex: '1 1 650px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          
-          {/* Animated Projection Area */}
-          <div style={{ width: '100%', maxWidth: '550px', textAlign: 'center', marginBottom: '4rem' }}>
-            <div className="cinema-screen" />
-            <p className="stark-font" style={{ fontSize: '0.65rem', color: 'rgba(0, 212, 255, 0.4)', letterSpacing: '8px', margin: 0, fontWeight: '900' }}>
-              PRIMARY VECTOR CINEMA SCREEN
-            </p>
-          </div>
+      <div style={{ background: "linear-gradient(180deg, rgba(15, 23, 42, 0.6) 0%, rgba(7, 10, 19, 0.8) 100%)", backdropFilter: "blur(20px)", padding: "25px 30px", borderRadius: "20px", border: "1px solid rgba(255, 255, 255, 0.05)", boxShadow: "0 20px 40px rgba(0,0,0,0.6)" }}>
 
-          {/* Seating Grid Wrapper Layout */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', background: 'rgba(8, 14, 27, 0.6)', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(0, 212, 255, 0.1)', width: '100%', alignItems: 'center' }}>
-            {rows.map(row => (
-              <div key={row} style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
-                <span className="stark-font" style={{ width: '24px', color: '#004f77', fontWeight: '900', fontSize: '1.1rem', textAlign: 'center' }}>{row}</span>
-                <div style={{ display: 'flex', gap: '0.9rem' }}>
-                  {seatNumbers.map(num => {
-                    const id = `${row}${num}`;
-                    const isOccupied = occupiedSeats.includes(id);
-                    const isSelected = selectedSeats.includes(id);
-                    
-                    return (
-                      <button
-                        key={id} 
-                        disabled={isOccupied} 
-                        onClick={() => handleSeatClick(id)}
-                        className="interactive-seat"
-                        style={{
-                          width: '40px', height: '40px', borderRadius: '10px', cursor: isOccupied ? 'not-allowed' : 'pointer',
-                          background: isOccupied ? 'linear-gradient(135deg, #220511, #ff003c22)' : isSelected ? '#00d4ff' : 'rgba(4, 10, 21, 0.9)',
-                          border: isOccupied ? '1px solid #ff003c' : isSelected ? '1px solid #00d4ff' : '1px solid rgba(0, 79, 119, 0.6)',
-                          color: isSelected ? '#060a12' : isOccupied ? '#ff003c' : '#94a3b8', 
-                          fontWeight: '800', fontSize: '0.8rem',
-                          boxShadow: isSelected ? '0 0 15px rgba(0, 212, 255, 0.4)' : 'none'
-                        }}
-                      >
-                        {num}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Quick Informational Legend Badges */}
-          <div style={{ display: 'flex', gap: '3rem', marginTop: '2.5rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <div style={{ width: '16px', height: '16px', background: 'rgba(4, 10, 21, 0.9)', border: '1px solid rgba(0, 79, 119, 0.6)', borderRadius: '4px' }} />
-              <span className="stark-font" style={{ fontSize: '0.7rem', color: '#94a3b8', letterSpacing: '1px' }}>AVAILABLE</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <div style={{ width: '16px', height: '16px', background: '#00d4ff', borderRadius: '4px', boxShadow: '0 0 8px #00d4ff' }} />
-              <span className="stark-font" style={{ fontSize: '0.7rem', color: '#00d4ff', letterSpacing: '1px' }}>SELECTED</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-              <div style={{ width: '16px', height: '16px', background: '#ff003c22', border: '1px solid #ff003c', borderRadius: '4px' }} />
-              <span className="stark-font" style={{ fontSize: '0.7rem', color: '#ff003c', letterSpacing: '1px' }}>RESERVED</span>
-            </div>
-          </div>
-
+        <div style={{ position: "relative", width: "80%", margin: "0 auto 25px auto", textAlign: "center" }}>
+          <div style={{ width: "100%", height: "4px", background: "linear-gradient(90deg, transparent 5%, #06b6d4 35%, #22d3ee 50%, #06b6d4 65%, transparent 95%)", borderRadius: "50%", boxShadow: "0 4px 20px rgba(34, 211, 238, 0.7)" }}></div>
+          <p style={{ color: "rgba(6, 182, 212, 0.4)", fontSize: "0.65rem", fontWeight: "800", letterSpacing: "6px", margin: "8px 0 0 0" }}>SCREEN</p>
         </div>
 
-        {/* Right Side: Premium High-Tech Checkout Terminal */}
-        <div className="glow-panel" style={{ flex: '1 1 380px', background: 'linear-gradient(145deg, rgba(8, 14, 27, 0.9), rgba(4, 8, 16, 0.95))', border: '2px solid rgba(0, 212, 255, 0.15)', borderRadius: '24px', padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', height: 'auto', alignSelf: 'stretch' }}>
-          <div>
-            <h3 className="stark-font" style={{ margin: '0 0 1.5rem 0', fontSize: '1.3rem', fontWeight: '900', letterSpacing: '1px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1rem' }}>
-              MANIFEST OVERVIEW
-            </h3>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: "10px 10px", margin: "0 auto 25px auto", maxWidth: "480px" }}>
+          {totalSeats.map((seat) => {
+            const isBooked = bookedSeats.includes(seat);
+            const isSelected = selectedSeats.includes(seat);
+            const isHovered = hoveredSeat === seat;
 
-            {/* Coordinates Parameter Row */}
-            <div style={{ marginBottom: '2rem' }}>
-              <p className="stark-font" style={{ margin: '0 0 0.5rem 0', fontSize: '0.7rem', color: '#94a3b8', letterSpacing: '1px' }}>SELECTED NODES</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {selectedSeats.length > 0 ? selectedSeats.map(seat => (
-                  <span key={seat} className="stark-font" style={{ background: 'rgba(0, 212, 255, 0.1)', border: '1px solid #00d4ff', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', color: '#00d4ff', fontWeight: '700' }}>
-                    {seat}
-                  </span>
-                )) : (
-                  <span className="stark-font" style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.85rem', fontStyle: 'italic' }}>No nodes designated...</span>
-                )}
-              </div>
-            </div>
+            let backgroundColor = "#0b1329";
+            let color = "#94a3b8";
+            let border = "1px solid rgba(255, 255, 255, 0.05)";
 
-            {/* System Breakdown Computation List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(0,0,0,0.2)', padding: '1.25rem', borderRadius: '12px', marginBottom: '2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span className="stark-font" style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Unit Fare</span>
-                <span className="stark-font" style={{ fontSize: '0.85rem' }}>${ticketPrice.toFixed(2)}</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span className="stark-font" style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Quantity</span>
-                <span className="stark-font" style={{ fontSize: '0.85rem' }}>x{selectedSeats.length}</span>
-              </div>
-            </div>
-          </div>
+            if (isBooked) {
+              backgroundColor = "rgba(239, 68, 68, 0.1)";
+              color = "rgba(239, 68, 68, 0.4)";
+              border = "1px solid rgba(239, 68, 68, 0.25)";
+            } else if (isSelected) {
+              backgroundColor = "#06b6d4";
+              color = "#070a13";
+              border = "1px solid #22d3ee";
+            } else if (isHovered) {
+              backgroundColor = "rgba(6, 182, 212, 0.12)";
+              color = "#22d3ee";
+              border = "1px solid rgba(6, 182, 212, 0.5)";
+            }
 
-          {/* Grand Valuation Calculation & CTA Button */}
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '2rem', padding: '0 0.5rem' }}>
-              <span className="stark-font" style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>TOTAL COST</span>
-              <span className="stark-font" style={{ fontSize: '2rem', color: '#00d4ff', fontWeight: '900', textShadow: '0 0 15px rgba(0, 212, 255, 0.4)' }}>
-                ${totalCost.toFixed(2)}
-              </span>
-            </div>
-
-            <button
-              disabled={selectedSeats.length === 0}
-              onClick={handleProceedToPayment}
-              className="stark-font"
-              style={{
-                width: '100%',
-                background: selectedSeats.length === 0 ? 'transparent' : 'linear-gradient(135deg, #ff003c, #b30027)',
-                border: selectedSeats.length === 0 ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                color: selectedSeats.length === 0 ? 'rgba(255,255,255,0.2)' : '#fff',
-                padding: '1.2rem',
-                borderRadius: '12px',
-                cursor: selectedSeats.length === 0 ? 'not-allowed' : 'pointer',
-                fontWeight: '900',
-                fontSize: '0.9rem',
-                letterSpacing: '2px',
-                boxShadow: selectedSeats.length === 0 ? 'none' : '0 8px 25px rgba(255, 0, 60, 0.35)',
-                transition: 'all 0.25s ease',
-                textTransform: 'uppercase'
-              }}
-              onMouseEnter={(e) => { if(selectedSeats.length > 0) e.target.style.transform = 'translateY(-2px)' }}
-              onMouseLeave={(e) => { if(selectedSeats.length > 0) e.target.style.transform = 'translateY(0)' }}
-            >
-              PROCEED TO PAY
-            </button>
-          </div>
-
+            return (
+              <button
+                key={seat}
+                onClick={() => handleSeatClick(seat)}
+                onMouseEnter={() => !isBooked && setHoveredSeat(seat)}
+                onMouseLeave={() => !isBooked && setHoveredSeat(null)}
+                disabled={isBooked}
+                style={{ padding: "10px 0", backgroundColor, color, border, borderRadius: "10px", fontWeight: "800", fontSize: "0.85rem", cursor: isBooked ? "not-allowed" : "pointer", transition: "all 0.15s ease" }}
+              >
+                {seat}
+              </button>
+            );
+          })}
         </div>
 
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", maxWidth: "480px", margin: "0 auto 20px auto" }}>
+          <div style={{ backgroundColor: "rgba(11, 19, 41, 0.5)", padding: "10px 15px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.03)" }}>
+            <div style={{ color: "#4b5563", fontSize: "0.65rem", fontWeight: "700", textTransform: "uppercase" }}>Seats Chosen</div>
+            <span style={{ fontWeight: "800", color: selectedSeats.length > 0 ? "#22d3ee" : "#4b5563", fontSize: "0.9rem" }}>{selectedSeats.join(", ") || "None"}</span>
+          </div>
+          <div style={{ backgroundColor: "rgba(11, 19, 41, 0.5)", padding: "10px 15px", borderRadius: "12px", border: "1px solid rgba(255, 255, 255, 0.03)", textAlign: "right" }}>
+            <div style={{ color: "#4b5563", fontSize: "0.65rem", fontWeight: "700", textTransform: "uppercase" }}>Total</div>
+            <strong style={{ color: selectedSeats.length > 0 ? "#10b981" : "#4b5563", fontSize: "1.1rem" }}>${totalAmount.toFixed(2)}</strong>
+          </div>
+        </div>
+
+        <button
+          disabled={selectedSeats.length === 0}
+          onClick={handleCheckout}
+          style={{ width: "100%", maxWidth: "480px", display: "block", margin: "0 auto", padding: "14px", background: selectedSeats.length > 0 ? "linear-gradient(135deg, #06b6d4, #0284c7)" : "#1e293b", border: "none", color: selectedSeats.length > 0 ? "white" : "#4b5563", fontWeight: "800", borderRadius: "12px", fontSize: "0.95rem", cursor: selectedSeats.length > 0 ? "pointer" : "not-allowed" }}
+        >
+          Confirm & Proceed
+        </button>
       </div>
     </div>
   );
-}
+};
+
+export default SeatSelection;

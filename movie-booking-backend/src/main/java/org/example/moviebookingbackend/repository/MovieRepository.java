@@ -6,5 +6,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface MovieRepository extends JpaRepository<Movie, Long> {
-    // JpaRepository automatically handles basic database tasks (Save, Find, Delete) for us!
 }
